@@ -11,7 +11,7 @@ import java.util.*;
 
 public class Arithmetical {
 
-    public static final int SCALE = 1024;
+    public static final int SCALE = 512;
     private static File inputPath, codeOutputPath, cipherOutputPath, outputPath;
     private static Integer totalLength;
     private static boolean first;
@@ -127,7 +127,7 @@ public class Arithmetical {
 
         for(int i = 0; i < freq.size(); i++) {
             Map.Entry<Character, Integer> term = freq.get(i);
-            BigDecimal termProb = BigDecimal.valueOf(term.getValue()).divide(BigDecimal.valueOf(totalLength), 256, RoundingMode.HALF_UP);
+            BigDecimal termProb = BigDecimal.valueOf(term.getValue()).divide(BigDecimal.valueOf(totalLength), SCALE, RoundingMode.HALF_UP);
             BigDecimal cumProb = termProb.multiply(domain).add(min);
             probs.put(term.getKey(), new Pair<>(min, cumProb));
             min = cumProb;
