@@ -1,0 +1,5 @@
+.idea/
+target/
+TIK.iml
+# Project exclude paths
+/out/
