@@ -20,37 +20,20 @@ public class BWT {
     public static void decode() throws IOException {
         cleanBefore(outputPath);
         StringBuilder sb = new StringBuilder();
-        int size;
+        int pos;
 
         sec = FileUtils.lineIterator(cipherOutputPath, "UTF-8");
         it = FileUtils.lineIterator(codeOutputPath, "UTF-8");
 
         try {
-            boolean nextLine = true;
             String line;
-            int charListSize = 0;
             while (it.hasNext()) {
-                line = it.nextLine();
-                if (nextLine) {
-                    String[] data = line.trim().split(" ", 2);
-                    size = Integer.parseInt(data[0]);
-                    for (int i = 0; i < data[1].length(); i++) sb.append(data[1].charAt(i));
-
-                    if (sb.length() < size) {
-                        nextLine = false;
-                    }
-                    else {
-                        solveDecode(sb.toString());
-                        sb.delete(0, sb.length());
-                    }
-                } else {
-                    for (int i = 0; i < line.length(); i++) sb.append(line.charAt(i));
-                    if (sb.length() >= charListSize) {
-                        solveDecode(sb.toString());
-                        nextLine = true;
-                        sb.delete(0, sb.length());
-                    }
-                }
+                line = sec.nextLine();
+                String[] data = line.trim().split(" ", 2);
+                pos = Integer.parseInt(data[0]);
+                for (int i = 0; i < data[1].length(); i++) sb.append(data[1].charAt(i));
+                solveDecode(pos, sb);
+                sb.delete(0, sb.length());
             }
         } finally {
             LineIterator.closeQuietly(sec);
@@ -77,21 +60,36 @@ public class BWT {
         System.out.println("Encoded");
     }
 
-    private static void solveDecode(String word) throws IOException {
-        List<String> list = new ArrayList<>(word.length());
+    private static void solveDecode(int pos, StringBuilder sb) throws IOException {
+        List<Character> list = new ArrayList<>(sb.length());
+        List<String> res = new ArrayList<>();
+        for(int i = 0; i < sb.length(); i++) list.add(sb.charAt(i));
+        sb.delete(0, sb.length());
 
-        if (sec.hasNext()) {
-            int pos = Integer.parseInt(sec.nextLine());
-            for (int i = 0; i < word.length(); i++) {
-                for (int j = 0; j < word.length(); j++) {
-                    if (j >= list.size())
-                        list.add(String.valueOf(word.charAt(j)));
-                    else
-                        list.set(j, word.charAt(j) + list.get(j));
+        int charCount = 0;
+        if (it.hasNext()) {
+            do {
+                String[] data = it.nextLine().trim().split(" ", 2);
+                charCount = Integer.parseInt(data[0]);
+                data = data[1].trim().split(" ");
+                for (int i = 0; i < data.length; i++) {
+                    int idx = Integer.parseInt(data[i]);
+                    sb.append(list.get(idx));
+                    list.add(0, list.remove(idx));
                 }
-                Collections.sort(list);
+            } while(sb.length() < charCount);
+
+            for (int i = 0; i < sb.length(); i++) {
+                for (int j = 0; j < sb.length(); j++) {
+                    if (j >= res.size())
+                        res.add(String.valueOf(sb.charAt(j)));
+                    else
+                        res.set(j, "" + sb.charAt(j) + res.get(j));
+                }
+                Collections.sort(res);
             }
-            Files.write(outputPath.toPath(), (list.get(pos) + '\n').getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+
+            Files.write(outputPath.toPath(), (res.get(pos) + '\n').getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
         }
     }
 
@@ -114,12 +112,24 @@ public class BWT {
         }
 
         sb.delete(0, sb.length());
-        sb.append(word[0].length()).append(" ").append(word[0]).append('\n');
-        Files.write(codeOutputPath.toPath(), sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+        Set<Character> set = new HashSet<>();
+        for (int i = 0; i < word[0].length(); i++)
+            set.add(word[0].charAt(i));
+        List<Character> list = new ArrayList<>(set);
+        sb.append(pos).append(" ");
+        for (int i = 0; i < list.size(); i++) sb.append(list.get(i));
+        sb.append('\n');
+        Files.write(cipherOutputPath.toPath(), sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
 
         sb.delete(0, sb.length());
-        sb.append(pos).append('\n');
-        Files.write(cipherOutputPath.toPath(), sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+        sb.append(word[0].length()).append(" ");
+        for (int i = 0; i < word[0].length(); i++) {
+            int idx = list.indexOf(word[0].charAt(i));
+            sb.append(idx).append(" ");
+            list.add(0, list.remove(idx));
+        }
+        sb.append('\n');
+        Files.write(codeOutputPath.toPath(), sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
     }
 
     private static void cleanBefore(File file) throws FileNotFoundException {
