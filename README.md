@@ -1,100 +1,100 @@
-# TIK 11-902 Fakhrutdinov Bulat
-## Внимательно ознакомится перед запуском программ
-### Первый запуск
+# Theory of Information Coding 11-902 Fakhrutdinov Bulat
+## Read carefully before running programs
+### First start
 
-Весь проект был сделан лично автором и гарантированно не содержит фрагменты чужого кода
+The entire project was made personally by the author and is guaranteed not to contain fragments of someone else's code
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://github.com/Korjick)
 
-Для удобства все JAR файлы вынесены в папку **out/** и запускаются с использованием run.bat в соответствующей папке.
-Текст необходимо будет вводить в input.txt файл, который также находится в папке **out/**
+For convenience, all JAR files are moved to the **out/** folder and run using run.bat in the appropriate folder.
+The text will need to be entered in the input.txt file, which is also located in the **out/** folder
 
-*При необходимости:* Все программы запускаются консольной командой: java -jar .\FileName.jar []
+*Optional:* All programs are started with a console command: java -jar .\FileName.jar []
 
-**Важно! На месте [] необходимо указать 4 пути:**
+**Important! In place of [] you must specify 4 paths:**
 
-- {inputPath} - файл, откуда будет браться текст
-- {codeOutputPath} - файл, куда будет записываться код
-- {cipherOutputPath} - файл, куда будет записываться необходимая мета-информация
-- {outputPath} - файл, куда будет записываться расшифровка
+- {inputPath} - file where the text will be taken from
+- {codeOutputPath} - file where the code will be written
+- {cipherOutputPath} - file where the necessary meta-information will be written
+- {outputPath} - file where the decryption will be written
 
-**Если хотя бы 1 путь не будет указан, программа не начнет свою работу. Кодировка UTF-8**
+**If at least 1 path is not specified, the program will not start. UTF-8 encoding**
 
 ## Huffman
 
-> Жадный алгоритм оптимального префиксного кодирования алфавита с минимальной избыточностью.
+> Greedy algorithm for optimal prefix encoding of the alphabet with minimal redundancy.
 
-При создании этого алгоритма был использован вспомогательный класс HuffmanUtils, для хранения:
+When creating this algorithm, the auxiliary class HuffmanUtils was used to store:
 
-- {charFrequencies} - частоты появления символов
-- {huffmanCodes} - для хранения полученных кодов
+- {charFrequencies} - character frequency
+- {huffmanCodes} - for storing received codes
 
-А также 2 класса - **Node** и **Leaf**, представляющих собой соответсвенно промежуточную сумму и концы дерева.
-По структуре алгоритм разбит на 2 части - **encoding** и **decoding**
+And also 2 classes - **Node** and **Leaf**, which represent the intermediate sum and ends of the tree, respectively.
+The structure of the algorithm is divided into 2 parts - **encoding** and **decoding**
 
 ### Encoding
 
-Двухпроходной алгоритм. Сначала собирает необходимую частоту символов. На основе нее строится Приоритетная очередь,
-которая расставляет частоты в порядке возрастания. Далее, пока в очереди не останется единственная нода, все ноды начинают
-собираться в общие блоки. Когда останется одно значение - запускается DFS, добавляя всем левым веткам значение - **0**,
-а правым - **1**. Коды, вместе с символами записываются в выходной файл.
+Two pass algorithm. First collects the required symbol rate. Based on it, a priority queue is built,
+which arranges the frequencies in ascending order. Further, until the only node remains in the queue, all nodes start
+collect in common blocks. When one value remains, DFS starts, adding the value - **0** to all left branches,
+and right - **1**. Codes, along with symbols, are written to the output file.
 
 ### Decoding
 
-Алгоритм считывает символ и его код, а также зашифрованную строку. Далее, производится расшифровка по ключу значения
+The algorithm reads the character and its code, as well as the encrypted string. Next, decryption is performed by the value key
 
 ## Arithmetical
 
->Алгоритм сжатия информации без потерь, который при кодировании ставит в соответствие тексту вещественное число из отрезка [0;1).
+>A lossless information compression algorithm that, when encoding, matches the text with a real number from the segment [0;1).
 
-Опираясь на алгоритм Хаффмана, в реализации был создан вспомогательный класс ArithmeticalUtils,
-где хранятся необходимые данные о частоте появлении символа, 
+Based on the Huffman algorithm, an auxiliary class ArithmeticalUtils was created in the implementation,
+where the necessary data about the frequency of occurrence of a character is stored,
 
 ### Encoding
 
-**Внимание! Алгоритм работает с большими числами, что автоматически ограничевает длину переводимой строки
-от аппаратной части компьютера. Кодирование тестировалось на строке длинной в 300 символов и дало результат:**
-- e - ~1.5 сек
-- d - ~20 сек
+**Attention! The algorithm works with large numbers, which automatically limits the length of the translated string
+from the computer hardware. Encoding was tested on a string of 300 characters long and gave the result: **
+- e - ~1.5 sec
+- d - ~20 sec
 
-**Присутствует параметр SCALE, который позволяет контролировать число знаков после запятой - соответственно,
-повышать точность**
+**There is a SCALE parameter that allows you to control the number of decimal places - respectively,
+improve accuracy**
 
-Программа получает на вход текст, после высчитывает частоту появление каждого символа, 
-записывая данные в Map. После чего идет просчет по блокам: создается массив типа *символ - [отрезок]*
-где на каждой итерации происходит уменьшение отрезка по формуле. Перед записью в файл, программа
-применяет разделение еще 1 раз.
+The program receives text as input, then calculates the frequency of occurrence of each character,
+writing data to Map. Then there is a calculation by blocks: an array of the type *symbol - [segment]* is created
+where at each iteration the segment decreases according to the formula. Before writing to a file, the program
+applies the split 1 more time.
 
 ### Decoding
 
-Происходит по Encoding принципу. Программа считывает частоту появления символов, а также длину зашифрованного слова
-и само слово. После чего поэтапно начинает расшифровку текста, путем биения на блоки
+Occurs according to the Encoding principle. The program reads the frequency of occurrence of characters, as well as the length of the encrypted word
+and the word itself. After that, it gradually begins to decipher the text, by beating into blocks
 
 
 ## BWT
 
-> BWT - (Burrows-Wheeler transform, BWT, также исторически называется блочно-сортирующим сжатием, хотя сжатием и не является) — это алгоритм, используемый в техниках сжатия данных для преобразования исходных данных. BWT используется в архиваторе bzip2. Алгоритм был изобретён Майклом Барроузом и Дэвидом Уилером.
+> BWT - (Burrows-Wheeler transform, BWT, also historically called block sort compression, although it is not a compression) is an algorithm used in data compression techniques to transform the original data. BWT is used in the bzip2 archiver. The algorithm was invented by Michael Burrows and David Wheeler.
 
 ### Encoding
 
-Программа не использует дополнительных классов, по факту лишь считывая текст, создавая массив
-длинною кол-ву символов этого текста, и смещая каждую строку. После чего массив сортируется и в выходной массив, 
-используя алгоритм 'Стопка-Книг', записывается
-последние символы каждой строки, а также мета-информация в виде позиции оригинального текста в отсортированном массиве
+The program does not use additional classes, in fact it only reads the text, creating an array
+long number of characters of this text, and shifting each line. The array is then sorted into the output array,
+using the 'Stack-of-Books' algorithm, writes
+the last characters of each line, as well as meta information in the form of the position of the original text in the sorted array
 
 ### Decoding
 
-Программа получает зашифрованную строку и мета-информацию. Расшифровывает последовательность 'Стопки-Книг', после чего поэлементно добавляет
-в массив длинны строки справа-налево и сортирует на каждом этапе. В конце прохода достается строка по полученной позиции.
+The program receives the encrypted string and meta information. Deciphers the 'Pile-Books' sequence, then adds element by element
+into an array of long strings from right to left and sorts at each stage. At the end of the pass, a line is obtained for the received position.
 
 ## Hemming
 
-> Самоконтролирующийся и самокорректирующийся код. Построен применительно к двоичной системе счисления. Позволяет исправлять одиночную ошибку (ошибка в одном бите слова) и находить двойную. Назван в честь американского математика Ричарда Хэмминга, предложившего код.
+> Self-monitoring and self-correcting code. Built with reference to the binary number system. Allows you to correct a single error (an error in one bit of a word) and find a double one. Named after the American mathematician Richard Hamming who proposed the code.
 
 ### Encoding
 
-Алгоритм представляет собой простую реализацию Хэмминга (7, 4). Сначала вычислается символ с максимальным двоичным кодом,
-после чего все символы приводятся к максимальной длинне + кратной четырем. На основе 4 блоков двоичного коды вычисляются:
+The algorithm is a simple implementation of Hamming (7, 4). First, the symbol with the maximum binary code is calculated,
+after which all characters are reduced to the maximum length + a multiple of four. On the basis of 4 blocks of binary codes are calculated:
 
 *p1 = (d1 + d2 + d4) % 2*
 
@@ -102,14 +102,14 @@
 
 *p3 = (d2 + d3 + d4) % 2*
 
-Результат записывается в виде: *p1 | p2 | d1 | p3 | d2 | d3 | d4*
+The result is written as: *p1 | p2 | d1 | p3 | d2 | d3 | d4*
 
 ### Decoding
 
 ![Build Status](https://i.imgur.com/H49iORT.png)
 
-Исходя из таблицы, мы получаем влияние контрольных битов. Высчитывая в полученном
-сообщении контрольные биты и найдя ошибку, мы можем с легкостью инвертировать неправильный бит,
-определив его позицию как: 
+Based on the table, we get the influence of the control bits. Calculating in the received
+message control bits and finding an error, we can easily invert the wrong bit,
+defining its position as:
 
 *pos = -1 + (p1 == error ? 1 : 0) + (p2 == error ? 2 : 0) + (p1 == error ? 4 : 0)*
